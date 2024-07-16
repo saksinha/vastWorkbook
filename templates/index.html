@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Splitter</title>
+    <style>
+        .highlighted { color: red; }
+        .key-highlighted { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>URL Splitter</h1>
+    <form id="url-form">
+        <label for="url">Enter URL:</label>
+        <input type="text" id="url" name="url" style="width: 80%;">
+        <button type="submit">Split and Highlight</button>
+    </form>
+    <br>
+    <textarea id="split-url-text" rows="10" style="width: 100%;"></textarea>
+    <br>
+    <button id="update-button">Update and Copy URL</button>
+
+    <script>
+        document.getElementById('url-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const url = document.getElementById('url').value;
+            fetch('/process_url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `url=${encodeURIComponent(url)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('split-url-text').innerHTML = data.highlighted_url;
+            });
+        });
+
+        document.getElementById('update-button').addEventListener('click', function() {
+            const updatedText = document.getElementById('split-url-text').value;
+            fetch('/update_url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `updated_text=${encodeURIComponent(updatedText)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tempInput = document.createElement('input');
+                tempInput.value = data.updated_url;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                alert('Updated URL copied to clipboard');
+            });
+        });
+    </script>
+</body>
+</html>
